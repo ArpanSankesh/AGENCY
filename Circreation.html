@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Creation | Social Media Growth Agency</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'void': '#050505',
+                        'chalk': '#EAEAE5',
+                        'accent': '#8b5cf6',
+                        'accent-dark': '#5b21b6',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'display': ['Impact', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #050505;
+            color: #EAEAE5;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Hide native scrollbar */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        /* Custom Locomotive Scrollbar Styling */
+        .c-scrollbar {
+            width: 6px !important;
+        }
+
+        .c-scrollbar_thumb {
+            background-color: #8b5cf6 !important;
+            border-radius: 10px !important;
+            opacity: 0.8 !important;
+        }
+
+        /* Background Effects */
+        .wave-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .wave-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(50px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-50px, 50px) scale(0.9);
+            }
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: #8b5cf6;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: #5b21b6;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: 7s;
+        }
+
+        .blob-3 {
+            width: 350px;
+            height: 350px;
+            background: #4338ca;
+            top: 40%;
+            left: 50%;
+            animation-delay: 14s;
+        }
+
+        /* Grain Overlay */
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s ease;
+        }
+
+        .glass-card:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+        }
+
+        /* Accordion */
+        .accordion-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 300px;
+            padding-top: 1rem;
+        }
+
+        .accordion-item.active .accordion-plus {
+            transform: rotate(45deg);
+        }
+
+        .accordion-plus {
+            transition: transform 0.3s ease;
+        }
+
+        /* Form Inputs */
+        .form-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #EAEAE5;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        /* Marquee Animation */
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .marquee-content {
+            animation: marquee 30s linear infinite;
+        }
+
+        /* Preloader */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #050505;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        #preloader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Fade in animation */
+        /* Fade in animation (Default state controlled by GSAP) */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="grain"></div>
+
+    <div class="wave-container">
+        <div class="wave-blob blob-1"></div>
+        <div class="wave-blob blob-2"></div>
+        <div class="wave-blob blob-3"></div>
+    </div>
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav
+        class="fixed top-0 w-full p-6 md:p-8 flex justify-between items-center z-50 bg-void/50 backdrop-blur-md border-b border-white/5">
+        <a href="#hero" class="text-xl md:text-2xl font-bold tracking-tight uppercase text-accent">Circle.Creation</a>
+
+        <div class="hidden lg:flex gap-8 text-sm uppercase tracking-wider">
+            <a href="#about" class="hover:text-accent transition-colors">About</a>
+            <a href="#services" class="hover:text-accent transition-colors">Services</a>
+            <a href="#pricing" class="hover:text-accent transition-colors">Pricing</a>
+            <a href="#testimonials" class="hover:text-accent transition-colors">Results</a>
+            <a href="#contact" class="hover:text-accent transition-colors">Contact</a>
+        </div>
+
+        <a href="#contact"
+            class="uppercase text-xs md:text-sm border border-accent px-4 md:px-6 py-2 rounded-full hover:bg-accent hover:text-white transition-all">
+            Get Started
+        </a>
+    </nav>
+
+    <div class="relative z-10">
+
+        <!-- HERO SECTION -->
+        <section id="hero"
+            class="pt-16 min-h-screen flex flex-col justify-center items-center px-6 md:px-10 text-center relative">
+            <div class="max-w-6xl mx-auto">
+                <h1
+                    class="text-7xl md:text-8xl lg:text-[10rem] xl:text-[12rem] font-display uppercase leading-none mb-6">
+                    We Build<br>
+                    <span class="text-accent">Growth</span>
+                </h1>
+                <p class="text-sm md:text-xl text-chalk/70 max-w-2xl mx-auto mb-10 px-4">
+                    Helping local businesses dominate social media with professional shoots, viral content, and
+                    strategic growth.
+                </p>
+                <div
+                    class="flex flex-col md:flex-row gap-4 justify-center items-center flex-wrap w-full px-4 hero-btns-container">
+                    <a href="#pricing"
+                        class="hero-btn bg-accent px-8 py-4 rounded-full uppercase text-sm font-bold hover:bg-accent-dark transition-all w-full md:w-auto">
+                        View Packages
+                    </a>
+                    <a href="#contact"
+                        class="hero-btn border border-white/30 px-8 py-4 rounded-full uppercase text-sm font-bold hover:bg-white/5 transition-all w-full md:w-auto">
+                        Book a Call
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- MARQUEE -->
+        <section class="py-8 border-y border-white/10 overflow-hidden bg-void/50 backdrop-blur-sm">
+            <div class="flex whitespace-nowrap">
+                <div
+                    class="marquee-content flex gap-8 items-center text-4xl md:text-6xl font-display uppercase text-gray-600">
+                    <span>Social Media</span>
+                    <span class="text-accent">•</span>
+                    <span class="text-chalk">Growth</span>
+                    <span class="text-accent">•</span>
+                    <span>Content</span>
+                    <span class="text-accent">•</span>
+                    <span class="text-chalk">Reels</span>
+                    <span class="text-accent">•</span>
+                    <span>Strategy</span>
+                    <span class="text-accent">•</span>
+                    <span>Social Media</span>
+                    <span class="text-accent">•</span>
+                    <span class="text-chalk">Growth</span>
+                    <span class="text-accent">•</span>
+                    <span>Content</span>
+                    <span class="text-accent">•</span>
+                    <span class="text-chalk">Reels</span>
+                    <span class="text-accent">•</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS SECTION -->
+        <section class="py-12 md:py-20 bg-void relative">
+            <div class="container mx-auto px-6 md:px-10">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16">
+                    <div class="text-center fade-in">
+                        <div class="text-5xl md:text-7xl font-display text-accent mb-4" data-count="150">0</div>
+                        <div class="text-xs md:text-sm uppercase tracking-widest text-chalk/50">Shoots Done</div>
+                    </div>
+                    <div class="text-center fade-in">
+                        <div class="text-5xl md:text-7xl font-display text-accent mb-4" data-count="2">0</div>
+                        <div class="text-xs md:text-sm uppercase tracking-widest text-chalk/50">Years Active</div>
+                    </div>
+                    <div class="text-center fade-in">
+                        <div class="text-5xl md:text-7xl font-display text-accent mb-4" data-count="95">0</div>
+                        <div class="text-xs md:text-sm uppercase tracking-widest text-chalk/50">Happy Clients</div>
+                    </div>
+                    <div class="text-center fade-in">
+                        <div class="text-5xl md:text-7xl font-display text-accent mb-4" data-count="500">0</div>
+                        <div class="text-xs md:text-sm uppercase tracking-widest text-chalk/50">Reels Created</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section id="about" class="py-12 md:py-28 px-6 md:px-20 bg-void">
+            <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-20">
+                <div>
+                    <span class="text-accent text-sm font-mono uppercase tracking-widest mb-6 block fade-in">( Our
+                        Philosophy )</span>
+                    <h2 class="text-4xl md:text-6xl font-display uppercase leading-tight mb-6 fade-in">
+                        We Don't Chase Trends.<br>
+                        <span class="text-accent">We Set Them.</span>
+                    </h2>
+                    <p class="text-chalk/60 text-lg leading-relaxed fade-in">
+                        Circle Creation combines data-driven strategies with creative excellence. We help local
+                        businesses dominate their markets through professional content and smart social media growth.
+                    </p>
+                </div>
+
+                <div class="space-y-0">
+                    <div class="accordion-item py-6 cursor-pointer">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-2xl md:text-3xl font-display uppercase hover:text-accent transition-colors">
+                                Data Driven</h3>
+                            <span class="text-3xl text-accent accordion-plus">+</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="text-chalk/60">Every strategy is backed by analytics, A/B testing, and algorithm
+                                insights. We don't guess—we execute based on what works.</p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item py-6 cursor-pointer">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-2xl md:text-3xl font-display uppercase hover:text-accent transition-colors">
+                                Fast Execution</h3>
+                            <span class="text-3xl text-accent accordion-plus">+</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="text-chalk/60">We shoot, edit, and publish while trends are hot. Speed is our
+                                advantage in the fast-moving social media landscape.</p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item py-6 cursor-pointer">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-2xl md:text-3xl font-display uppercase hover:text-accent transition-colors">
+                                Full Service</h3>
+                            <span class="text-3xl text-accent accordion-plus">+</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="text-chalk/60">From strategy to shooting to posting—we handle everything. One
+                                agency, complete growth solution.</p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item py-6 cursor-pointer">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-2xl md:text-3xl font-display uppercase hover:text-accent transition-colors">
+                                Results Focused</h3>
+                            <span class="text-3xl text-accent accordion-plus">+</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="text-chalk/60">Beautiful content that actually converts. We create with
+                                purpose—every post is designed to drive engagement and sales.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVICES SECTION -->
+        <section id="services" class="py-24 md:py-40 bg-chalk text-void">
+            <div class="container mx-auto px-6 md:px-10">
+                <div class="mb-16 fade-in">
+                    <span class="text-accent text-sm font-mono uppercase tracking-widest mb-4 block">( What We Do
+                        )</span>
+                    <h2 class="text-5xl md:text-8xl font-display uppercase tracking-tight">Services</h2>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Service 1 -->
+                    <div class="border border-void/10 p-8 md:p-12 hover:border-accent transition-all group fade-in">
+                        <div class="text-6xl font-display text-accent/30 mb-4">01</div>
+                        <h3
+                            class="text-3xl md:text-4xl font-display uppercase mb-4 group-hover:text-accent transition-colors">
+                            Content Creation</h3>
+                        <p class="text-void/70 text-lg leading-relaxed">
+                            Professional Reels, Stories, and YouTube Shorts optimized for maximum engagement and
+                            virality.
+                        </p>
+                    </div>
+
+                    <!-- Service 2 -->
+                    <div class="border border-void/10 p-8 md:p-12 hover:border-accent transition-all group fade-in">
+                        <div class="text-6xl font-display text-accent/30 mb-4">02</div>
+                        <h3
+                            class="text-3xl md:text-4xl font-display uppercase mb-4 group-hover:text-accent transition-colors">
+                            Social Media Growth</h3>
+                        <p class="text-void/70 text-lg leading-relaxed">
+                            Strategic content planning, posting schedules, and engagement tactics that turn followers
+                            into customers.
+                        </p>
+                    </div>
+
+                    <!-- Service 3 -->
+                    <div class="border border-void/10 p-8 md:p-12 hover:border-accent transition-all group fade-in">
+                        <div class="text-6xl font-display text-accent/30 mb-4">03</div>
+                        <h3
+                            class="text-3xl md:text-4xl font-display uppercase mb-4 group-hover:text-accent transition-colors">
+                            Brand Strategy</h3>
+                        <p class="text-void/70 text-lg leading-relaxed">
+                            Complete brand positioning and identity development that makes you stand out in crowded
+                            markets.
+                        </p>
+                    </div>
+
+                    <!-- Service 4 -->
+                    <div class="border border-void/10 p-8 md:p-12 hover:border-accent transition-all group fade-in">
+                        <div class="text-6xl font-display text-accent/30 mb-4">04</div>
+                        <h3
+                            class="text-3xl md:text-4xl font-display uppercase mb-4 group-hover:text-accent transition-colors">
+                            Professional Shoots</h3>
+                        <p class="text-void/70 text-lg leading-relaxed">
+                            Full-day content shoots with pro equipment. Walk away with 30-100+ ready-to-post pieces.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRICING SECTION -->
+        <section id="pricing" class="py-24 md:py-40 px-6 md:px-10 bg-void">
+            <div class="text-center mb-16 fade-in">
+                <span class="text-accent text-sm font-mono uppercase tracking-widest mb-4 block">( Investment )</span>
+                <h2 class="text-5xl md:text-8xl font-display uppercase tracking-tight mb-4">Pricing</h2>
+                <p class="text-chalk/60">Simple packages for maximum growth</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <!-- Package 1 -->
+                <div class="glass-card p-8 md:p-10 rounded-2xl fade-in">
+                    <div class="text-accent text-xs font-bold uppercase tracking-widest mb-4">Starter</div>
+                    <h3 class="text-3xl md:text-4xl font-display uppercase mb-2">Starter Boost</h3>
+                    <p class="text-chalk/50 mb-6 text-sm">Perfect for getting started with social media</p>
+                    <div class="text-4xl md:text-5xl font-bold mb-8">₹10,000</div>
+                    <ul class="space-y-3 text-sm text-chalk/70 mb-10">
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> 1 Social Media Shoot</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> 30+ Content Pieces</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Basic Editing</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Content Calendar</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> 1 Week Delivery</li>
+                    </ul>
+                    <a href="#contact"
+                        class="block w-full py-4 border border-white/20 rounded-lg uppercase text-xs font-bold hover:bg-accent hover:border-accent hover:text-white transition-all text-center">
+                        Select Plan
+                    </a>
+                </div>
+
+                <!-- Package 2 - Popular -->
+                <div class="glass-card p-8 md:p-10 rounded-2xl border-accent/50 bg-white/5 relative fade-in">
+                    <div
+                        class="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
+                        Popular
+                    </div>
+                    <div class="text-accent text-xs font-bold uppercase tracking-widest mb-4">Growth</div>
+                    <h3 class="text-3xl md:text-4xl font-display uppercase mb-2">Growth Pro</h3>
+                    <p class="text-chalk/50 mb-6 text-sm">Most popular for serious growth</p>
+                    <div class="text-4xl md:text-5xl font-bold mb-8">₹18,000</div>
+                    <ul class="space-y-3 text-sm text-chalk/70 mb-10">
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> 2 Social Media Shoots</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> 60+ Content Pieces</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Premium Editing</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Growth Strategy</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Monthly Planning</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Analytics Report</li>
+                    </ul>
+                    <a href="#contact"
+                        class="block w-full py-4 bg-accent rounded-lg uppercase text-xs font-bold hover:bg-accent-dark transition-all text-center text-white">
+                        Select Plan
+                    </a>
+                </div>
+
+                <!-- Package 3 -->
+                <div class="glass-card p-8 md:p-10 rounded-2xl fade-in">
+                    <div class="text-accent text-xs font-bold uppercase tracking-widest mb-4">Premium</div>
+                    <h3 class="text-3xl md:text-4xl font-display uppercase mb-2">Brand Domination</h3>
+                    <p class="text-chalk/50 mb-6 text-sm">Complete social media takeover</p>
+                    <div class="text-4xl md:text-5xl font-bold mb-8">₹30,000<span class="text-2xl">+</span></div>
+                    <ul class="space-y-3 text-sm text-chalk/70 mb-10">
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> 3+ Social Media Shoots</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> 100+ Content Pieces</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Cinematic Editing</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Full Growth Management</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Priority Support</li>
+                        <li class="flex gap-3"><span class="text-accent text-lg">✓</span> Custom Branding</li>
+                    </ul>
+                    <a href="#contact"
+                        class="block w-full py-4 border border-white/20 rounded-lg uppercase text-xs font-bold hover:bg-accent hover:border-accent hover:text-white transition-all text-center">
+                        Contact Us
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- TESTIMONIALS -->
+        <section id="testimonials" class="py-24 md:py-40 bg-void border-y border-white/10">
+            <div class="text-center mb-16 fade-in">
+                <span class="text-accent font-mono text-sm uppercase tracking-widest mb-4 block">( Social Proof )</span>
+                <h2 class="text-5xl md:text-8xl font-display uppercase tracking-tight">What Clients Say</h2>
+            </div>
+
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-xl fade-in">
+                        <div class="text-accent text-5xl font-display mb-4">"</div>
+                        <p class="text-chalk/70 mb-6 leading-relaxed">
+                            Circle Creation doubled our Instagram engagement in just 30 days. The content quality is
+                            unmatched.
+                        </p>
+                        <div class="text-sm font-bold uppercase">Rahul S.</div>
+                        <div class="text-xs text-chalk/40">Gym Owner, Indore</div>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-xl fade-in">
+                        <div class="text-accent text-5xl font-display mb-4">"</div>
+                        <p class="text-chalk/70 mb-6 leading-relaxed">
+                            Best investment for our business. We went from zero presence to getting daily customer
+                            inquiries.
+                        </p>
+                        <div class="text-sm font-bold uppercase">Priya M.</div>
+                        <div class="text-xs text-chalk/40">Boutique Owner</div>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-xl fade-in">
+                        <div class="text-accent text-5xl font-display mb-4">"</div>
+                        <p class="text-chalk/70 mb-6 leading-relaxed">
+                            They understand both local markets and digital trends. Results speak louder than promises.
+                        </p>
+                        <div class="text-sm font-bold uppercase">Amit K.</div>
+                        <div class="text-xs text-chalk/40">Restaurant Owner</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="py-24 md:py-40 px-6 md:px-20 bg-chalk text-void">
+            <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
+                <div class="fade-in">
+                    <span class="text-accent text-sm font-mono uppercase tracking-widest mb-4 block">( Get In Touch
+                        )</span>
+                    <h2 class="text-4xl md:text-7xl font-display uppercase leading-tight mb-8">
+                        Let's Build Something <span class="text-accent">Legendary</span>
+                    </h2>
+                    <p class="text-void/60 mb-12 text-lg leading-relaxed">
+                        Ready to dominate your market? Skip the emails and get a direct line to our growth strategy
+                        team.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-xl">📧</span>
+                            </div>
+                            <div>
+                                <div class="text-xs uppercase tracking-widest text-void/40 mb-1">Email</div>
+                                <a href="mailto:hello@circlecreation.in"
+                                    class="text-lg hover:text-accent transition-colors">hello@circlecreation.in</a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-xl">📍</span>
+                            </div>
+                            <div>
+                                <div class="text-xs uppercase tracking-widest text-void/40 mb-1">Location</div>
+                                <p class="text-lg">India</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cta-card-wrapper relative">
+                    <div
+                        class="glass-card p-10 md:p-16 rounded-3xl border-accent/20 flex flex-col items-center text-center relative overflow-hidden bg-white/40 shadow-2xl">
+                        <div class="mb-8">
+                            <div
+                                class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-4xl shadow-lg shadow-green-500/20">
+                                <span class="text-white">💬</span>
+                            </div>
+                        </div>
+
+                        <h3 class="text-3xl md:text-4xl font-display uppercase mb-4">Let's Talk</h3>
+                        <p class="text-void/60 mb-10">Average response time: 15 minutes</p>
+
+                        <a href="https://wa.me/919876543210?text=Hey! I want to grow my brand with Circle Creation."
+                            target="_blank" id="whatsapp-cta"
+                            class="group relative inline-flex items-center justify-center px-8 py-5 font-bold text-white transition-all bg-[#25D366] rounded-xl hover:bg-[#128C7E] w-full">
+                            <span class="uppercase tracking-widest text-sm">Start WhatsApp Chat</span>
+                            <svg class="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="bg-void py-12 md:py-20 px-6 md:px-10 border-t border-white/10">
+            <div class="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <h3 class="text-2xl font-display uppercase mb-4 text-accent">Circle.Creation</h3>
+                    <p class="text-chalk/50 text-sm">Building brands that dominate through strategic social media
+                        growth.</p>
+                </div>
+                <div>
+                    <h4 class="text-sm uppercase tracking-widest mb-4 text-chalk/70">Quick Links</h4>
+                    <ul class="space-y-2 text-chalk/50 text-sm">
+                        <li><a href="#about" class="hover:text-accent transition-colors">About</a></li>
+                        <li><a href="#services" class="hover:text-accent transition-colors">Services</a></li>
+                        <li><a href="#pricing" class="hover:text-accent transition-colors">Pricing</a></li>
+                        <li><a href="#contact" class="hover:text-accent transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm uppercase tracking-widest mb-4 text-chalk/70">Services</h4>
+                    <ul class="space-y-2 text-chalk/50 text-sm">
+                        <li>Content Creation</li>
+                        <li>Social Media Growth</li>
+                        <li>Brand Strategy</li>
+                        <li>Professional Shoots</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm uppercase tracking-widest mb-4 text-chalk/70">Follow Us</h4>
+                    <ul class="space-y-2 text-chalk/50 text-sm">
+                        <li><a href="https://www.instagram.com/circle.creation?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                                class="hover:text-accent transition-colors">Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-chalk/30 text-sm">© 2026 Circle Creation. All rights reserved.</p>
+                <div class="flex gap-6 text-chalk/30 text-sm">
+                    <a href="#" class="hover:text-accent transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-accent transition-colors">Terms of Service</a>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // Use GSAP Context for cleanup if needed (not strictly necessary for simple pages but good practice)
+
+        // Wait for load
+        window.addEventListener('load', () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // 1. Initialize Locomotive Scroll - REMOVED
+
+            // 2. Setup ScrollTrigger Proxy - REMOVED
+
+            // ------------------------------------
+            // Rest of the Animations
+            // ------------------------------------
+
+            // 1. Preloader Exit & Hero Entrance
+            const tl = gsap.timeline();
+
+            tl.to('.loader-spinner', {
+                opacity: 0,
+                scale: 0.5,
+                duration: 0.5,
+                ease: "power2.inOut"
+            })
+                .to('#preloader', {
+                    opacity: 0,
+                    pointerEvents: "none",
+                    duration: 0.8,
+                    ease: "power2.inOut"
+                })
+                .from("#hero h1", {
+                    y: 100,
+                    opacity: 0,
+                    duration: 1.2,
+                    ease: "power3.out"
+                }, "-=0.4")
+                .from("#hero p", {
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    ease: "power3.out"
+                }, "-=0.8")
+                .from(".hero-btn", {
+                    y: 30,
+                    opacity: 0,
+                    stagger: 0.2,
+                    duration: 0.8,
+                    ease: "back.out(1.7)",
+                    clearProps: "all"
+                }, "-=0.6");
+
+
+            // 2. Generic Scroll Animations
+            const fadeUpElements = gsap.utils.toArray('.fade-in, .glass-card, .border-void\\/10');
+
+            fadeUpElements.forEach(element => {
+                gsap.set(element, { opacity: 0, y: 50 });
+
+                gsap.to(element, {
+                    scrollTrigger: {
+                        trigger: element,
+                        start: "top 85%",
+                        end: "bottom top",
+                        toggleActions: "play none none reverse"
+                    },
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: "power3.out",
+                    stagger: 0.2
+                });
+            });
+
+            // 3. Stats Counter Animation
+            const counters = document.querySelectorAll('[data-count]');
+            counters.forEach(counter => {
+                const target = parseInt(counter.dataset.count);
+                const obj = { val: 0 };
+
+                ScrollTrigger.create({
+                    trigger: counter,
+                    start: "top 85%",
+                    onEnter: () => {
+                        gsap.to(obj, {
+                            val: target,
+                            duration: 2,
+                            ease: "power2.out",
+                            onUpdate: () => {
+                                counter.textContent = Math.floor(obj.val);
+                            }
+                        });
+                    }
+                });
+            });
+
+            // 4. Parallax Background Blobs
+            // Note: Locomotive has native parallax (data-scroll-speed), but we can keep GSAP integration too
+            gsap.to('.blob-1', {
+                y: 100,
+                rotation: 45,
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 2
+                }
+            });
+
+            gsap.to('.blob-2', {
+                y: -150,
+                x: 50,
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 3
+                }
+            });
+
+            // 5. Hover Effects
+            const magneticButtons = document.querySelectorAll('a[href="#contact"], button');
+            magneticButtons.forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                    gsap.to(btn, { scale: 1.05, duration: 0.3, ease: "power2.out" });
+                });
+                btn.addEventListener('mouseleave', () => {
+                    gsap.to(btn, { scale: 1, duration: 0.3, ease: "power2.out" });
+                });
+            });
+
+            // 6. Navigation Bar Blur on Scroll
+            ScrollTrigger.create({
+                start: 'top -80',
+                end: 99999,
+                toggleClass: { className: 'bg-void/90', targets: 'nav' }
+            });
+
+            // Accordion
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
+                    if (!isActive) item.classList.add('active');
+
+                    // Refresh locomotive after accordion change
+                    setTimeout(() => locoScroll.update(), 500);
+                });
+            });
+
+            // each time the window updates, we should refresh ScrollTrigger and then update LocomotiveScroll. 
+            ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
+
+            // after everything is set up, refresh() ScrollTrigger and update LocomotiveScroll because padding may have been added
+            ScrollTrigger.refresh();
+
+            // Smooth Scroll to anchors (Native is fine)
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+        });
+
+        const contactForm = document.getElementById('contact-form');
+        if (contactForm) {
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Thank you! We will get back to you soon.');
+                e.target.reset();
+            });
+        }
+    </script>
+</body>
+
+</html>
